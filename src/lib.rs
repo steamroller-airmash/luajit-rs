@@ -35,10 +35,15 @@ pub mod ffi;
 pub mod state;
 pub mod types;
 
+mod lua;
+
 pub use state::{State, ThreadStatus};
 pub use types::{LuaFunction, LuaObject};
 
 pub use libc::c_int;
+
+pub const REGISTRY_INDEX: c_int = crate::ffi::LUA_REGISTRYINDEX;
+pub const GLOBALS_INDEX: c_int = crate::ffi::LUA_GLOBALSINDEX;
 
 /// This macro is used to wrap a rust function in an `extern "C"` trampoline
 /// to automatically pass a [`State`](state/struct.State.html) struct as the first

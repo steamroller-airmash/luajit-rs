@@ -1,0 +1,4 @@
+[submodule "luajit"]
+	path = luajit
+	url = https://github.com/steamroller-airmash/luajit
+	branch = with-cmake

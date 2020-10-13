@@ -263,10 +263,10 @@ pub const LUA_HOOKLINE: c_int = 2;
 pub const LUA_HOOKCOUNT: c_int = 3;
 pub const LUA_HOOKTAILRET: c_int = 4;
 
-pub const LUA_MASKCALL: c_int = (1 << LUA_HOOKCALL);
-pub const LUA_MASKRET: c_int = (1 << LUA_HOOKRET);
-pub const LUA_MASKLINE: c_int = (1 << LUA_HOOKLINE);
-pub const LUA_MASKCOUNT: c_int = (1 << LUA_HOOKCOUNT);
+pub const LUA_MASKCALL: c_int = 1 << LUA_HOOKCALL;
+pub const LUA_MASKRET: c_int = 1 << LUA_HOOKRET;
+pub const LUA_MASKLINE: c_int = 1 << LUA_HOOKLINE;
+pub const LUA_MASKCOUNT: c_int = 1 << LUA_HOOKCOUNT;
 
 extern "C" {
     pub fn lua_setlevel(from: *mut lua_State, to: *mut lua_State);

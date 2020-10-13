@@ -1,8 +1,9 @@
 use super::ffi::*;
 use std::ffi::{CString, CStr};
 use libc::{c_int, c_void};
-use std::{mem, ptr};
+use std::{mem, ptr::{self, NonNull}};
 use std::path::Path;
+use std::ops::{Deref, DerefMut};
 
 use super::types::{LuaValue, LuaFunction, LuaObject};
 
@@ -33,29 +34,91 @@ impl From<c_int> for ThreadStatus {
     }
 }
 
+
+extern "C" fn rust_realloc(
+    _: *mut c_void,
+    mem: *mut c_void,
+    oldsize: usize,
+    newsize: usize
+) -> *mut c_void {
+    use std::alloc::{Layout, alloc, realloc, dealloc};
+
+    let new_layout = match Layout::from_size_align(newsize, 16) {
+        Ok(layout) => layout,
+        Err(_) => return ptr::null_mut()
+    };
+    let old_layout = match Layout::from_size_align(oldsize, 16) {
+        Ok(layout) => layout,
+        Err(_) => return ptr::null_mut()
+    };
+
+    if newsize == 0 {
+        unsafe { dealloc(mem as _, old_layout); }
+        return ptr::null_mut()
+    }
+
+    if oldsize == 0 {
+        return unsafe { alloc(new_layout) } as _;
+    }
+
+    return unsafe { realloc( mem as _, old_layout, newsize ) as _ };
+}
+
+pub struct OwnedState {
+    state: State,
+}
+
+impl OwnedState {
+    /// Calls LUA C API to instantiate a new Lua state.
+    pub fn new() -> Self {
+        let state = unsafe { 
+            lua_newstate(Some(rust_realloc), ptr::null_mut()) 
+        };
+
+        Self { 
+            state: State::from_ptr(state)
+        }
+    }
+}
+
+impl Deref for OwnedState {
+    type Target = State;
+
+    fn deref(&self) -> &Self::Target {
+        &self.state
+    }
+}
+
+impl DerefMut for OwnedState {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.state
+    }
+}
+
+impl Drop for OwnedState {
+    fn drop(&mut self) {
+        unsafe {
+            lua_close(self.state.inner())
+        }
+    }
+}
+
 pub struct State {
     state: *mut lua_State,
-    owned: bool
 }
 
 impl State {
-    /// Calls LUA C API to instantiate a new Lua state.
-    pub fn new() -> State {
-        unsafe {
-            State {
-                state: lua_open(),
-                owned: true
-            }
-        }
-    }
-
     /// Wraps an existing Lua state. Suitable for use in function handlers
     /// passed to Lua through the C API.
     pub fn from_ptr(state: *mut lua_State) -> State {
         State {
             state: state,
-            owned: false,
         }
+    }
+
+    /// Gets underlying state pointer.
+    pub fn inner(&mut self) -> *mut lua_State {
+        self.state
     }
 
     /// Opens the Lua standard library on this state.
@@ -283,6 +346,20 @@ impl State {
     pub fn is_userdata(&mut self, idx: c_int) -> bool {
         unsafe {
             lua_isuserdata(self.state, idx) != 0
+        }
+    }
+
+    /// Test if the value at `idx` on the stack is nil.
+    pub fn is_nil(&mut self, idx: c_int) -> bool {
+        unsafe {
+            lua_isnil(self.state, idx)
+        }
+    }
+
+    /// Test if the value at `idx` on the stack is a table.
+    pub fn is_table(&mut self, idx: c_int) -> bool {
+        unsafe {
+            lua_istable(self.state, idx)
         }
     }
 
@@ -695,14 +772,22 @@ impl State {
             lua_checkstack(self.state, n as c_int) != 0
         }
     }
-}
 
-impl Drop for State {
-    fn drop(&mut self) {
-        if self.owned {
-            unsafe {
-                lua_close(self.state);
-            }
+    pub fn rawgeti(&mut self, idx: i32, key: i32) {
+        unsafe {
+            lua_rawgeti(self.state, idx, key);
+        }
+    }
+
+    pub fn rawseti(&mut self, idx: i32, key: i32) {
+        unsafe {
+            lua_rawseti(self.state, idx, key);
+        }
+    }
+
+    pub fn getn(&mut self, idx: i32) -> usize {
+        unsafe {
+            lua_objlen(self.state, idx)
         }
     }
 }
