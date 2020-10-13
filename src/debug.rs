@@ -226,7 +226,7 @@ impl fmt::Display for DebugError {
 
 impl Error for DebugError {}
 
-/// Return information about a specific function or functoin invocation.
+/// Return information about a specific function or function invocation.
 ///
 /// To get information about a function invocation, the parameter `ar` must be a
 /// valid activation record that was filled by a previous call to [`get_stack`]
@@ -258,7 +258,7 @@ impl Error for DebugError {}
 /// - `L`: pushes onto the stack a table whose indices are the numbers of the
 ///   lines that are valid on the function. (A *valid line* is a line with some
 ///   associated code, that is, a line where you can put a break point.
-///   None-valid lines include empty lines and comments.)
+///   invalid lines include empty lines and comments.)
 pub fn get_info(state: &mut State, what: &str, ar: &mut Debug) -> Result<(), DebugError> {
   let what = CString::new(what).expect("what string contained a nul byte");
   let ret = unsafe { lua_getinfo(state.as_mut_ptr(), what.as_ptr(), ar.as_mut_ptr()) };

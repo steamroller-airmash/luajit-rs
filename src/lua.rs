@@ -1,5 +1,6 @@
 use std::ffi::{CStr, CString};
 use std::ptr;
+use std::fmt;
 
 use crate::ffi::*;
 use crate::{LuaFunction, OwnedState, State};
@@ -42,6 +43,21 @@ impl LuaError {
     })
   }
 }
+
+impl fmt::Display for LuaError {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.write_str(match self {
+      Self::Runtime => "Lua runtime error",
+      Self::Memory => "unable to allocate memory within Lua",
+      Self::Error => "error while running Lua error handler function",
+      Self::Syntax => "Lua syntax error",
+      Self::File => "Unable to open file",
+      Self::Unknown => "Unknown Lua error"
+    })
+  }
+}
+
+impl std::error::Error for LuaError {}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum ThreadStatus {
