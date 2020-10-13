@@ -41,7 +41,7 @@ extern "C" fn rust_realloc(
 }
 
 pub struct OwnedState {
-  state: State,
+  state: NonNull<lua_State>,
 }
 
 impl OwnedState {
@@ -51,7 +51,7 @@ impl OwnedState {
 
   pub unsafe fn from_ptr(state: *mut lua_State) -> Self {
     Self {
-      state: State::from_ptr(state),
+      state: NonNull::new(state).expect("state pointer was null"),
     }
   }
 }
@@ -60,24 +60,24 @@ impl Deref for OwnedState {
   type Target = State;
 
   fn deref(&self) -> &Self::Target {
-    &self.state
+    unsafe { State::from_ptr(self.state.as_ptr()) }
   }
 }
 
 impl DerefMut for OwnedState {
   fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.state
+    unsafe { State::from_ptr(self.state.as_ptr()) }
   }
 }
 
 impl Drop for OwnedState {
   fn drop(&mut self) {
-    unsafe { lua_close(self.state.as_mut_ptr()) }
+    unsafe { lua_close(self.as_mut_ptr()) }
   }
 }
 
 pub struct State {
-  state: NonNull<lua_State>,
+  _dummy: lua_State,
 }
 
 impl State {
@@ -89,21 +89,16 @@ impl State {
   ///
   /// # Panics
   /// Panics if `state` is null.
-  pub unsafe fn from_ptr(state: *mut lua_State) -> Self {
-    let state = match NonNull::new(state) {
-      Some(state) => state,
-      None => panic!("state pointer was null"),
-    };
-
-    Self { state }
+  pub unsafe fn from_ptr<'a>(state: *mut lua_State) -> &'a mut Self {
+    &mut *(state as *mut _)
   }
 
   pub fn as_ptr(&self) -> *const lua_State {
-    self.state.as_ptr() as *const _
+    self as *const _ as _
   }
 
   pub fn as_mut_ptr(&mut self) -> *mut lua_State {
-    self.state.as_ptr()
+    self as *mut _ as _
   }
 }
 

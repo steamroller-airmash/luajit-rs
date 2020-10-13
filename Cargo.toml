@@ -12,6 +12,7 @@ license = "MIT"
 
 [dependencies]
 libc = "0.2.32"
+bitflags = "1.2.1"
 
 [build-dependencies]
 cmake = "0.1"

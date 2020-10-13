@@ -104,7 +104,7 @@ where
   T: LuaObject,
 {
   fn push_val(self, l: *mut ffi::lua_State) {
-    let mut state = unsafe { State::from_ptr(l) };
+    let state = unsafe { State::from_ptr(l) };
     unsafe {
       *state.new_struct::<T>() = self;
     }

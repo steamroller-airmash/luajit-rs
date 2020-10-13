@@ -190,7 +190,7 @@ pub unsafe fn cpcall<T>(state: &mut State, func: LuaFunction, ud: &mut T) -> Lua
 /// The new table has space pre-allocated for `narr` array elements and `nrec`
 /// non-array elements. This pre-allocation is useful for when you know exactly
 /// how many elements the table will have. Otherwise you can use the function
-/// [`newtable`](crate::lua::newtable).
+/// [`new_table`](crate::lua::new_table).
 pub fn create_table(state: &mut State, narr: c_int, nrec: c_int) {
   unsafe { lua_createtable(state.as_mut_ptr(), narr, nrec) }
 }
@@ -529,7 +529,7 @@ pub fn push_lightuserdata(state: &mut State, p: *mut c_void) {
   unsafe { lua_pushlightuserdata(state.as_mut_ptr(), p) }
 }
 
-/// Equivalent to [`pushlstring`](crate::lua::push_lstring)
+/// Equivalent to [`push_string`](crate::lua::push_string)
 pub fn push_literal(state: &mut State, s: &'static str) {
   unsafe { lua_pushliteral(state.as_mut_ptr(), s) }
 }
@@ -649,16 +649,17 @@ pub fn replace(state: &mut State, index: c_int) {
 /// then you push onto its stack the main function plus an arguments; then you
 /// call `resume`, with `narg` being the number of arguments. This call returns
 /// when the coroutine suspends or finishes its execution. When it returns, the
-/// stack contains all values passed to [`yield`] or all values returned from
-/// the body function. `resume` returns `ThreadStatus::Yielded` if the coroutine
-/// yields, `ThreadStatus::Normal` if the coroutine finishes its execution
-/// without errors, or an error in case of errors. In case of errors, the stack
-/// is not unwound, so you can use the debug API over it. The error message is
-/// on the top of the stack. To restart a coroutine, you put on its stack only
-/// the values to be passed as results from yield, and then call `resume`.
+/// stack contains all values passed to [`lua_yield`] or all values returned
+/// from the body function. `resume` returns `ThreadStatus::Yielded` if the
+/// coroutine yields, `ThreadStatus::Normal` if the coroutine finishes its
+/// execution without errors, or an error in case of errors. In case of errors,
+/// the stack is not unwound, so you can use the debug API over it. The error
+/// message is on the top of the stack. To restart a coroutine, you put on its
+/// stack only the values to be passed as results from yield, and then call
+/// `resume`.
 ///
 /// [`new_thread`](crate::lua::new_thread)
-/// [`yield`](crate::lua::yield)
+/// [`lua_yield`](crate::lua::lua_yield)
 pub fn resume(state: &mut State, narg: c_int) -> LuaResult<ThreadStatus> {
   ThreadStatus::from_ret(unsafe { lua_resume(state.as_mut_ptr(), narg) })
 }
@@ -882,7 +883,7 @@ pub fn to_pointer(state: &mut State, index: c_int) -> *const c_void {
 /// This function gives an additional reference to an existing state. Using it
 /// to pop values which are currently being referenced by rust code off the
 /// stack will cause UB.
-pub unsafe fn to_thread(state: &mut State, index: c_int) -> Option<State> {
+pub unsafe fn to_thread(state: &mut State, index: c_int) -> Option<&mut State> {
   let other = lua_tothread(state.as_mut_ptr(), index);
 
   if other == ptr::null_mut() {

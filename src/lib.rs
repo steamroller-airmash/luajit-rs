@@ -30,11 +30,14 @@
 //! ```
 
 extern crate libc;
+#[macro_use]
+extern crate bitflags;
 
 mod lua;
+mod state;
 
+pub mod debug;
 pub mod ffi;
-pub mod state;
 pub mod types;
 
 pub use lua::*;
