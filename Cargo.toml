@@ -8,8 +8,10 @@ documentation = "https://dreae.gitlab.io/luajit-rs/luajit/"
 repository = "https://gitlab.com/Dreae/luajit-rs"
 readme = "README.md"
 keywords = ["luajit", "lua"]
-category = ["external-ffi-bindings", "embedded", "api-bindings"]
 license = "MIT"
 
 [dependencies]
 libc = "0.2.32"
+
+[build-dependencies]
+cmake = "0.1"

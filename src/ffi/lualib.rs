@@ -1,5 +1,5 @@
-use libc::{c_uchar, c_int};
 use super::lua::lua_State;
+use libc::{c_int, c_uchar};
 
 pub const LUA_FILEHANDLE: &'static [c_uchar] = b"FILE*\x00";
 pub const LUA_COLIBNAME: &'static [c_uchar] = b"coroutine\x00";
@@ -15,16 +15,16 @@ pub const LUA_JITLIBNAME: &'static [c_uchar] = b"jit\x00";
 pub const LUA_FFILIBNAME: &'static [c_uchar] = b"ffi\x00";
 
 extern "C" {
-    pub fn luaopen_base(L: *mut lua_State) -> c_int;
-    pub fn luaopen_math(L: *mut lua_State) -> c_int;
-    pub fn luaopen_string(L: *mut lua_State) -> c_int;
-    pub fn luaopen_table(L: *mut lua_State) -> c_int;
-    pub fn luaopen_io(L: *mut lua_State) -> c_int;
-    pub fn luaopen_os(L: *mut lua_State) -> c_int;
-    pub fn luaopen_package(L: *mut lua_State) -> c_int;
-    pub fn luaopen_debug(L: *mut lua_State) -> c_int;
-    pub fn luaopen_bit(L: *mut lua_State) -> c_int;
-    pub fn luaopen_jit(L: *mut lua_State) -> c_int;
-    pub fn luaopen_ffi(L: *mut lua_State) -> c_int;
-    pub fn luaL_openlibs(L: *mut lua_State);
+  pub fn luaopen_base(L: *mut lua_State) -> c_int;
+  pub fn luaopen_math(L: *mut lua_State) -> c_int;
+  pub fn luaopen_string(L: *mut lua_State) -> c_int;
+  pub fn luaopen_table(L: *mut lua_State) -> c_int;
+  pub fn luaopen_io(L: *mut lua_State) -> c_int;
+  pub fn luaopen_os(L: *mut lua_State) -> c_int;
+  pub fn luaopen_package(L: *mut lua_State) -> c_int;
+  pub fn luaopen_debug(L: *mut lua_State) -> c_int;
+  pub fn luaopen_bit(L: *mut lua_State) -> c_int;
+  pub fn luaopen_jit(L: *mut lua_State) -> c_int;
+  pub fn luaopen_ffi(L: *mut lua_State) -> c_int;
+  pub fn luaL_openlibs(L: *mut lua_State);
 }
