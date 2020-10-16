@@ -1,6 +1,6 @@
 use std::ffi::{CStr, CString};
-use std::ptr;
 use std::fmt;
+use std::ptr;
 
 use crate::ffi::*;
 use crate::{LuaFunction, OwnedState, State};
@@ -52,7 +52,7 @@ impl fmt::Display for LuaError {
       Self::Error => "error while running Lua error handler function",
       Self::Syntax => "Lua syntax error",
       Self::File => "Unable to open file",
-      Self::Unknown => "Unknown Lua error"
+      Self::Unknown => "Unknown Lua error",
     })
   }
 }
@@ -303,6 +303,14 @@ pub fn get_field(state: &mut State, index: c_int, key: &str) {
 /// This function panics if `name` contains a nul byte.
 pub fn get_global(state: &mut State, name: &str) {
   get_field(state, LUA_GLOBALSINDEX, name)
+}
+
+/// Pushes the registery value with key `name` onto the stack.
+///
+/// # Panics
+/// This function panics if `name` contains a nul byte.
+pub fn get_registry(state: &mut State, name: &str) {
+  get_field(state, LUA_REGISTRYINDEX, name)
 }
 
 /// Pushes the metatable of the value at the given stack index onto the stack.
@@ -754,6 +762,12 @@ pub fn set_field(state: &mut State, index: c_int, k: &str) {
 pub fn set_global(state: &mut State, name: &str) {
   let name = CString::new(name).expect("name value contained a nul byte");
   unsafe { lua_setglobal(state.as_mut_ptr(), name.as_ptr()) }
+}
+
+/// Pops a value from the stack and sets it as the new value of registry key
+/// `name`.
+pub fn set_registry(state: &mut State, name: &str) {
+  set_field(state, LUA_REGISTRYINDEX, name)
 }
 
 /// Pops a table from the stack and sets it as the new metatable for the given
